@@ -9,7 +9,7 @@ export const categories = ['error','app'] as const;
 export type Severity = typeof severities[number];
 export type Category = typeof categories[number];
 
-export const formatFileName = (basePath: string, category: Category) => path.format({dir:basePath,base:category, ext:'.log'});
+export const formatFileName = (basePath: string, category: Category) => path.format({dir:basePath,name:category, ext:'.log'});
 const timeStamp = () => new Date();
 
 const formatRecord = (severity:Severity, message:string)=>JSON.stringify([timeStamp(),severity, message]);
