@@ -5,6 +5,8 @@ import { createLogger } from './imp/logger-factory';
 import { getCategory } from './imp/parse-category';
 import { LogInit, LogMessage } from './imp/types';
 import { withLevels } from './imp/updater';
+export { LogInit } from './imp/types';
+export { Category, Severity } from './imp/log' ;
 
 let basePath = './';
 
@@ -18,7 +20,7 @@ export const getLogger = (category: Category = 'error'): Record<Severity, LogMes
   if (typeof result !== 'undefined') {
     return result;
   }
-  const created = createLogger(levels,()=>basePath,category);
+  const created = createLogger(levels, () => basePath, category);
   loggers.set(category, created);
   return created;
 };
@@ -54,10 +56,10 @@ export const handleGetLog: RequestHandler = async (req, res, next) => {
 export const handleClearLog: RequestHandler = async (req, res, next) => {
   try {
     const category = getCategory(req.query);
-    await clearLog(basePath,category);
+    await clearLog(basePath, category);
     res.status(HttpStatusCode.NoContent).end();
   }
-  catch(err){
+  catch (err) {
     next(err);
   }
 };
