@@ -35,7 +35,7 @@ export const init = (onConfigure: ((props: LogInit) => void | undefined)) => {
     basePath = logInit.basePath;
   }
 
-  logInit.levels.forEach(([value, key]) => {
+  logInit.levels.forEach((value, key) => {
     if (isSeverity(value)) {
       levels.set(key, value);
     }
