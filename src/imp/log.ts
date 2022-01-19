@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { LogMessage } from './types';
 
 const LOG_ENCODING = 'utf8';
 
@@ -7,7 +8,9 @@ export const severities = ['verbose', 'info', 'warning', 'error'] as const;
 export const categories = ['error', 'app'] as const;
 
 export type Severity = typeof severities[number];
-export type Category = typeof categories[number];
+export type Category = typeof categories[number] | string;
+export type Levels = Map<Category, Severity>;
+export type Loggers = Map<Category, Record<Severity, LogMessage>>;
 
 export const formatFileName = (basePath: string, category: Category) => path.format({ dir: basePath, name: category, ext: '.log' });
 const timeStamp = () => new Date();
@@ -15,6 +18,8 @@ const timeStamp = () => new Date();
 const formatRecord = (severity: Severity, message: string) => JSON.stringify([timeStamp(), severity, message]);
 
 const withNewLine = (value: string) => `${value}\n`;
+
+export const isSeverity = (value:string):value is Severity =>severities.indexOf(value as Severity)>=0;
 
 export const writeLog = async (
   basePath: string,

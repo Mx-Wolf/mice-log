@@ -1,19 +1,19 @@
 import { RequestHandler } from 'express';
 import { HttpStatusCode } from './imp/constants';
-import { Severity, Category, readLog, clearLog } from './imp/log';
+import { getInitLevels } from './imp/init-levels';
+import { Severity, Category, readLog, clearLog, isSeverity } from './imp/log';
 import { createLogger } from './imp/logger-factory';
 import { getCategory } from './imp/parse-category';
 import { LogInit, LogMessage } from './imp/types';
-import { withLevels } from './imp/updater';
 export { LogInit } from './imp/types';
-export { Category, Severity } from './imp/log' ;
+export { Category, Severity } from './imp/log';
 
 let basePath = './';
 
 const levels = new Map<Category, Severity>();
-const updaterWith = withLevels(levels);
-
 const loggers = new Map<Category, Record<Severity, LogMessage>>();
+
+const getKnown = (qs: qs.ParsedQs) => getCategory([...loggers.keys(), ...levels.keys()], qs);
 
 export const getLogger = (category: Category = 'error'): Record<Severity, LogMessage> => {
   const result = loggers.get(category);
@@ -25,18 +25,21 @@ export const getLogger = (category: Category = 'error'): Record<Severity, LogMes
   return created;
 };
 
+export const init = (onConfigure: ((props: LogInit) => void | undefined)) => {
+  const logInit = getInitLevels();
+  if (typeof onConfigure === 'function') {
+    onConfigure(logInit);
+  }
 
-export const init = (settings?: Partial<LogInit> | undefined) => {
-  if (typeof settings === 'undefined') {
-    return;
+  if (logInit.basePath.length > 0) {
+    basePath = logInit.basePath;
   }
-  const { basePath: initBasePath, levels: initLevels } = settings;
-  if (typeof initBasePath !== 'undefined') {
-    basePath = initBasePath;
-  }
-  if (typeof initLevels !== 'undefined') {
-    (Object.keys(initLevels) as Category[]).forEach(updaterWith(initLevels));
-  }
+
+  logInit.levels.forEach(([value, key]) => {
+    if (isSeverity(value)) {
+      levels.set(key, value);
+    }
+  });
 };
 
 export const handleGetLog: RequestHandler = async (req, res, next) => {
@@ -44,7 +47,7 @@ export const handleGetLog: RequestHandler = async (req, res, next) => {
     res.send(
       await readLog(
         basePath,
-        getCategory(req.query),
+        getKnown(req.query),
       ),
     );
   }
@@ -55,7 +58,7 @@ export const handleGetLog: RequestHandler = async (req, res, next) => {
 
 export const handleClearLog: RequestHandler = async (req, res, next) => {
   try {
-    const category = getCategory(req.query);
+    const category = getKnown(req.query);
     await clearLog(basePath, category);
     res.status(HttpStatusCode.NoContent).end();
   }
