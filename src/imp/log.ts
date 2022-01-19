@@ -1,5 +1,50 @@
-export const severities = [ 'verbose', 'info', 'warning', 'error'] as const;
+import fs from 'fs/promises';
+import path from 'path';
+
+const LOG_ENCODING = 'utf8';
+
+export const severities = ['verbose', 'info', 'warning', 'error'] as const;
+export const categories = ['error','app'] as const;
+
 export type Severity = typeof severities[number];
-export const log = (basePath:string, severity: Severity, category: string, message: string): void => {
-  throw new Error(`'not implemented yet'${severity} ${category}: ${message}`);
-};
+export type Category = typeof categories[number];
+
+export const formatFileName = (basePath: string, category: Category) => path.format({dir:basePath,base:category, ext:'.log'});
+const timeStamp = () => new Date();
+
+const formatRecord = (severity:Severity, message:string)=>JSON.stringify([timeStamp(),severity, message]);
+
+export const writeLog = async (
+  basePath: string,
+  severity: Severity,
+  category: Category,
+  message: string
+): Promise<void> =>
+  fs.appendFile(
+    formatFileName(
+      basePath,
+      category),
+    formatRecord(
+      severity,
+      message,
+    ),
+  );
+
+export const readLog = async (basePath: string, category: Category): Promise<string> =>
+  fs.readFile(
+    formatFileName(
+      basePath,
+      category,
+    ),
+    {
+      encoding: LOG_ENCODING,
+    },
+  );
+
+export const clearLog = (basePath: string, category: Category): Promise<void> =>
+  fs.truncate(
+    formatFileName(
+      basePath,
+      category,
+    ),
+  );

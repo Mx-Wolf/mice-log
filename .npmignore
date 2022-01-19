@@ -1,0 +1,5 @@
+src
+tsconfig.json
+.eslintrc.json
+.mocharc.json
+mice-log*.tgz
