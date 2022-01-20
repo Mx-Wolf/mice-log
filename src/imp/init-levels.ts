@@ -7,7 +7,7 @@ const withSettings = (settings:NodeJS.ProcessEnv)=>(a:Map<string,string>, b:stri
     const value = settings[b];
     if(typeof value === 'string')
     {
-      a.set(b.substring(0,MICE_LOG_KNOWN_PREFIX.length).toLocaleLowerCase(), value);
+      a.set(b.substring(MICE_LOG_KNOWN_PREFIX.length).toLocaleLowerCase(), value);
     }
   }
   return a;
