@@ -4,7 +4,7 @@ const MICE_LOG_KNOWN_PREFIX = 'mice_log_';
 
 const withSettings = (settings:NodeJS.ProcessEnv)=>(a:Map<string,string>, b:string)=>{
   if(b.toLocaleLowerCase().startsWith(MICE_LOG_KNOWN_PREFIX) ){
-    const value = typeof settings[b];
+    const value = settings[b];
     if(typeof value === 'string')
     {
       a.set(b.substring(0,MICE_LOG_KNOWN_PREFIX.length).toLocaleLowerCase(), value);
